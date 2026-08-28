@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { useState } from 'react';
 import { AuthProvider } from './contexts/AuthContext';
 import { AuthRoute } from './components/auth/AuthRoute';
 import { Navbar } from './components/layout/Navbar';
@@ -6,14 +7,20 @@ import Dashboard from './views/Dashboard';
 import Employees from './views/Employees';
 import Settings from './views/Settings';
 import Login from './views/Login';
+import AdminUsers from './views/AdminUsers';
 
 export default function App() {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
   return (
     <Router>
       <AuthProvider>
         <div className="min-h-screen flex">
-          <Navbar />
-          <main className="flex-1 p-8 overflow-auto ml-64">
+          <Navbar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
+          <main 
+            className="flex-1 p-8 overflow-auto ml-20 transition-all duration-300"
+            onClick={() => setIsSidebarOpen(false)}
+          >
             <Routes>
               <Route path="/login" element={<Login />} />
               <Route 
@@ -37,6 +44,14 @@ export default function App() {
                 element={
                   <AuthRoute>
                     <Settings />
+                  </AuthRoute>
+                } 
+              />
+              <Route 
+                path="/admin/users" 
+                element={
+                  <AuthRoute>
+                    <AdminUsers />
                   </AuthRoute>
                 } 
               />

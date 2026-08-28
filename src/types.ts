@@ -1,19 +1,27 @@
 import { Timestamp } from 'firebase/firestore';
 
 export type MilestoneType = 'BIRTHDAY' | 'ANNIVERSARY';
+export type UserRole = 'user' | 'pro' | 'admin';
+
+export interface AppUser {
+  uid: string;
+  email: string;
+  role: UserRole;
+  createdAt: Timestamp;
+}
 
 export interface Employee {
   id?: string;
   userId: string;
-  firstName: string;
-  lastName: string;
-  email: string;
+  employeeId: string;
+  name: string;
   department: string;
-  jobTitle: string;
+  email: string;
+  phone: string;
   dob: string; // ISO date string YYYY-MM-DD
   joinedDate: string; // ISO date string YYYY-MM-DD
   status: 'active' | 'inactive';
-  metadata?: Record<string, any>;
+  metadata?: Record<string, any>; // Used for custom fields / pro versions
   createdAt: Timestamp;
 }
 
@@ -24,6 +32,7 @@ export interface AlertSettings {
     port: number;
     user: string;
     enabled: boolean;
+    sendToEmployee?: boolean;
   };
   teams?: {
     webhookUrl: string;
@@ -39,6 +48,9 @@ export interface AlertSettings {
     enabled: boolean;
   };
   templates: {
+    type?: 'normal' | 'card';
+    logoUrl?: string;
+    detailsText?: string;
     birthday: string;
     anniversary: string;
   };

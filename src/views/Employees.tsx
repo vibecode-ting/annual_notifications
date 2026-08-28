@@ -41,11 +41,11 @@ export default function Employees() {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const data = {
-      firstName: formData.get('firstName') as string,
-      lastName: formData.get('lastName') as string,
+      employeeId: formData.get('employeeId') as string,
+      name: formData.get('name') as string,
+      phone: formData.get('phone') as string,
       email: formData.get('email') as string,
       department: formData.get('department') as string,
-      jobTitle: formData.get('jobTitle') as string,
       dob: formData.get('dob') as string,
       joinedDate: formData.get('joinedDate') as string,
       status: formData.get('status') as 'active' | 'inactive',
@@ -114,7 +114,7 @@ export default function Employees() {
   };
 
   const filteredEmployees = employees.filter(emp => 
-    `${emp.firstName} ${emp.lastName} ${emp.email} ${emp.department}`
+    `${emp.name} ${emp.employeeId} ${emp.email} ${emp.department} ${emp.phone}`
       .toLowerCase()
       .includes(search.toLowerCase())
   );
@@ -178,9 +178,10 @@ export default function Employees() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="table-header">
-                <th className="px-6 py-4">Employee</th>
+                <th className="px-6 py-4">Employee ID</th>
+                <th className="px-6 py-4">Name</th>
                 <th className="px-6 py-4">Department</th>
-                <th className="px-6 py-4">Job Title</th>
+                <th className="px-6 py-4">Contact</th>
                 <th className="px-6 py-4">Dates</th>
                 <th className="px-6 py-4">Status</th>
                 <th className="px-6 py-4 text-right">Actions</th>
@@ -196,14 +197,14 @@ export default function Employees() {
               ) : filteredEmployees.length > 0 ? (
                 filteredEmployees.map((emp) => (
                   <tr key={emp.id} className="table-row-hover">
+                    <td className="px-6 py-4 text-sm font-medium text-slate-900 dark:text-zinc-100">{emp.employeeId}</td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-corp-blue/10 dark:bg-gold-500/10 flex items-center justify-center text-corp-blue dark:text-gold-500 text-xs font-bold border border-corp-blue/20 dark:border-gold-500/20">
-                          {emp.firstName[0]}{emp.lastName[0]}
+                          {emp.name?.[0] || 'U'}
                         </div>
                         <div>
-                          <p className="text-sm font-bold text-slate-900 dark:text-zinc-100 group-hover:text-corp-blue transition-colors">{emp.firstName} {emp.lastName}</p>
-                          <p className="text-xs text-slate-500 dark:text-zinc-400">{emp.email}</p>
+                          <p className="text-sm font-bold text-slate-900 dark:text-zinc-100 group-hover:text-corp-blue transition-colors">{emp.name}</p>
                         </div>
                       </div>
                     </td>
@@ -212,7 +213,12 @@ export default function Employees() {
                         {emp.department}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-sm text-slate-600 dark:text-zinc-400">{emp.jobTitle}</td>
+                    <td className="px-6 py-4 text-sm text-slate-600 dark:text-zinc-400">
+                      <div className="space-y-1">
+                        <p className="text-xs text-slate-500 dark:text-zinc-400 truncate max-w-[150px]">{emp.email}</p>
+                        <p className="text-xs text-slate-500 dark:text-zinc-400 truncate max-w-[150px]">{emp.phone}</p>
+                      </div>
+                    </td>
                     <td className="px-6 py-4">
                       <div className="space-y-1">
                         <p className="text-xs text-slate-500 dark:text-zinc-400 flex items-center gap-2">
@@ -278,26 +284,28 @@ export default function Employees() {
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider mb-1.5">First Name</label>
-                  <input name="firstName" defaultValue={editingEmployee?.firstName} required className="glass-input" />
+                  <label className="block text-xs font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider mb-1.5">Employee ID</label>
+                  <input name="employeeId" defaultValue={editingEmployee?.employeeId} required className="glass-input" />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider mb-1.5">Last Name</label>
-                  <input name="lastName" defaultValue={editingEmployee?.lastName} required className="glass-input" />
+                  <label className="block text-xs font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider mb-1.5">Full Name</label>
+                  <input name="name" defaultValue={editingEmployee?.name} required className="glass-input" />
                 </div>
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider mb-1.5">Email Address</label>
-                <input name="email" type="email" defaultValue={editingEmployee?.email} required className="glass-input" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider mb-1.5">Department</label>
-                  <input name="department" defaultValue={editingEmployee?.department} required className="glass-input" />
+                  <label className="block text-xs font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider mb-1.5">Email Address</label>
+                  <input name="email" type="email" defaultValue={editingEmployee?.email} required className="glass-input" />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider mb-1.5">Job Title</label>
-                  <input name="jobTitle" defaultValue={editingEmployee?.jobTitle} required className="glass-input" />
+                  <label className="block text-xs font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider mb-1.5">Phone Number</label>
+                  <input name="phone" type="text" defaultValue={editingEmployee?.phone} required className="glass-input" />
+                </div>
+              </div>
+              <div className="grid grid-cols-1 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider mb-1.5">Department</label>
+                  <input name="department" defaultValue={editingEmployee?.department} required className="glass-input" />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -345,8 +353,10 @@ export default function Employees() {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="table-header">
+                    <th className="px-4 py-2">Emp ID</th>
                     <th className="px-4 py-2">Name</th>
                     <th className="px-4 py-2">Email</th>
+                    <th className="px-4 py-2">Phone</th>
                     <th className="px-4 py-2">Dept</th>
                     <th className="px-4 py-2">DOB</th>
                     <th className="px-4 py-2">Join Date</th>
@@ -355,8 +365,10 @@ export default function Employees() {
                 <tbody className="divide-y divide-slate-100/50 dark:divide-zinc-800/50">
                   {importPreview.map((emp, i) => (
                     <tr key={i} className="text-sm table-row-hover">
-                      <td className="px-4 py-3 font-medium text-slate-900 dark:text-zinc-100">{emp.firstName} {emp.lastName}</td>
+                      <td className="px-4 py-3 text-slate-900 dark:text-zinc-100">{emp.employeeId}</td>
+                      <td className="px-4 py-3 font-medium text-slate-900 dark:text-zinc-100">{emp.name}</td>
                       <td className="px-4 py-3 text-slate-500 dark:text-zinc-400">{emp.email}</td>
+                      <td className="px-4 py-3 text-slate-500 dark:text-zinc-400">{emp.phone}</td>
                       <td className="px-4 py-3 text-slate-500 dark:text-zinc-400">{emp.department}</td>
                       <td className="px-4 py-3 text-slate-500 dark:text-zinc-400">{emp.dob}</td>
                       <td className="px-4 py-3 text-slate-500 dark:text-zinc-400">{emp.joinedDate}</td>

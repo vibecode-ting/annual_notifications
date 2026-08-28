@@ -4,30 +4,32 @@ import { db } from '../lib/firebase';
 import { useAuth } from '../contexts/AuthContext';
 import { Employee } from '../types';
 import { calculateMilestones, MilestoneResult } from '../utils/milestones';
-import { Cake, Briefcase, Calendar, ChevronRight, TrendingUp, Users, Bell } from 'lucide-react';
+import { Cake, Briefcase, Calendar, ChevronRight, TrendingUp, Users, Bell, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { cn } from '../lib/utils';
 
 export default function Dashboard() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
+  const [employees, setEmployees] = useState<Employee[]>([]);
   const [milestones, setMilestones] = useState<MilestoneResult[]>([]);
   const [stats, setStats] = useState({ totalEmployees: 0, activeAlerts: 0 });
+  const [expandedStat, setExpandedStat] = useState<'employees' | 'milestones' | 'alerts' | null>(null);
 
   useEffect(() => {
     if (!user) return;
-
     const fetchData = async () => {
       try {
         const q = query(collection(db, 'employees'), where('userId', '==', user.uid));
         const querySnapshot = await getDocs(q);
-        const employees = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Employee));
+        const fetchedEmployees = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Employee));
         
-        const calculated = calculateMilestones(employees, 30); // Next 30 days
+        setEmployees(fetchedEmployees);
+        const calculated = calculateMilestones(fetchedEmployees, 30); // Next 30 days
         setMilestones(calculated);
         setStats({
-          totalEmployees: employees.length,
-          activeAlerts: employees.filter(e => e.status === 'active').length
+          totalEmployees: fetchedEmployees.length,
+          activeAlerts: fetchedEmployees.filter(e => e.status === 'active').length
         });
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
@@ -35,23 +37,29 @@ export default function Dashboard() {
         setLoading(false);
       }
     };
-
     fetchData();
   }, [user]);
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-8 h-8 border-4 border-corp-blue dark:border-gold-500 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
 
   const todayMilestones = milestones.filter(m => m.isToday);
   const upcomingMilestones = milestones.filter(m => !m.isToday);
+  
+  const deptCounts = employees.reduce((acc, emp) => {
+    const dept = emp.department || 'Other';
+    acc[dept] = (acc[dept] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+  const deptSummary = Object.entries(deptCounts).map(([dept, count]) => `${dept}: ${count}`).join(', ') || 'Click to view details';
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
+    <div className="space-y-8 animate-in fade-in duration-500 relative">
       <div>
         <h1 className="text-2xl font-bold text-slate-900 dark:text-zinc-100">Dashboard Overview</h1>
         <p className="text-slate-500 dark:text-zinc-400">Welcome back! Here's what's happening with your team milestones.</p>
@@ -62,22 +70,25 @@ export default function Dashboard() {
           title="Total Employees" 
           value={stats.totalEmployees} 
           icon={Users} 
-          trend="+2 this month"
-          color="from-corp-blue to-blue-600 dark:from-gold-600 dark:to-gold-500" 
+          trend={deptSummary}
+          color="from-corp-blue to-blue-600 dark:from-gold-600 dark:to-gold-500"
+          onClick={() => setExpandedStat('employees')}
         />
         <StatCard 
           title="Upcoming Milestones" 
           value={milestones.length} 
           icon={Calendar} 
-          trend="Next 30 days"
-          color="from-indigo-500 to-purple-600 dark:from-purple-600 dark:to-purple-500" 
+          trend="This month"
+          color="from-indigo-500 to-purple-600 dark:from-purple-600 dark:to-purple-500"
+          onClick={() => setExpandedStat('milestones')}
         />
         <StatCard 
           title="Active Alerts" 
           value={stats.activeAlerts} 
           icon={Bell} 
-          trend="Monitoring active"
-          color="from-emerald-500 to-teal-600 dark:from-emerald-600 dark:to-emerald-500" 
+          trend="Click to view details"
+          color="from-emerald-500 to-teal-600 dark:from-emerald-600 dark:to-emerald-500"
+          onClick={() => setExpandedStat('alerts')}
         />
       </div>
 
@@ -127,28 +138,94 @@ export default function Dashboard() {
           </div>
         </section>
       </div>
+
+      {/* Expanded Stats Modals */}
+      {expandedStat && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-sm" onClick={() => setExpandedStat(null)}></div>
+          <div className="glass-panel relative w-full max-w-2xl rounded-2xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between p-6 border-b border-slate-200/50 dark:border-zinc-800/50">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-zinc-100">
+                {expandedStat === 'employees' && 'Total Employees'}
+                {expandedStat === 'milestones' && 'Upcoming Milestones'}
+                {expandedStat === 'alerts' && 'Active Alerts'}
+              </h3>
+              <button onClick={() => setExpandedStat(null)} className="p-2 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-full transition-colors text-slate-500 dark:text-zinc-400">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-6 max-h-[60vh] overflow-y-auto">
+              {expandedStat === 'employees' && (
+                <div className="space-y-4">
+                  {employees.map(emp => (
+                    <div key={emp.id} className="flex justify-between items-center p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-zinc-900/50 border border-slate-100 dark:border-zinc-800/50">
+                      <div>
+                        <p className="font-bold text-sm text-slate-900 dark:text-zinc-100">{emp.name}</p>
+                        <p className="text-xs text-slate-500 dark:text-zinc-400">{emp.department} • {emp.email}</p>
+                        <p className="text-[10px] text-slate-400 dark:text-zinc-500 mt-1">Joined: {emp.joinedDate} • DOB: {emp.dob}</p>
+                      </div>
+                      <span className="text-xs font-semibold text-slate-500 dark:text-zinc-400">ID: {emp.employeeId}</span>
+                    </div>
+                  ))}
+                  {employees.length === 0 && <p className="text-sm text-slate-500 text-center py-4">No employees found.</p>}
+                </div>
+              )}
+              {expandedStat === 'milestones' && (
+                <div className="space-y-4">
+                  {milestones.map((milestone, idx) => (
+                    <div key={idx}>
+                      <MilestoneItem milestone={milestone} />
+                    </div>
+                  ))}
+                  {milestones.length === 0 && <p className="text-sm text-slate-500 text-center py-4">No upcoming milestones.</p>}
+                </div>
+              )}
+              {expandedStat === 'alerts' && (
+                <div className="space-y-4">
+                  {employees.filter(e => e.status === 'active').map(emp => (
+                    <div key={emp.id} className="flex justify-between items-center p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-zinc-900/50 border border-slate-100 dark:border-zinc-800/50">
+                      <div>
+                        <p className="font-bold text-sm text-slate-900 dark:text-zinc-100">{emp.name}</p>
+                        <p className="text-xs text-slate-500 dark:text-zinc-400">Alerts active for this employee's milestones.</p>
+                      </div>
+                      <Bell className="w-4 h-4 text-emerald-500" />
+                    </div>
+                  ))}
+                  {employees.filter(e => e.status === 'active').length === 0 && <p className="text-sm text-slate-500 text-center py-4">No active alerts.</p>}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
-function StatCard({ title, value, icon: Icon, trend, color }: any) {
+function StatCard({ title, value, icon: Icon, trend, color, onClick }: any) {
   return (
-    <div className="glass-panel p-6 rounded-2xl relative overflow-hidden group">
+    <div 
+      className="glass-panel p-6 rounded-2xl relative overflow-hidden group cursor-pointer hover:shadow-lg transition-all hover:-translate-y-1"
+      onClick={onClick}
+    >
       {/* Decorative gradient glow in background */}
       <div className={`absolute -right-8 -top-8 w-32 h-32 bg-gradient-to-br ${color} opacity-10 dark:opacity-5 blur-2xl group-hover:opacity-20 transition-opacity`}></div>
       
       <div className="flex items-start justify-between relative z-10">
         <div>
           <p className="text-sm font-medium text-slate-500 dark:text-zinc-400 mb-1">{title}</p>
-          <h3 className="text-3xl font-bold text-slate-900 dark:text-zinc-100">{value}</h3>
+          <h3 className="text-3xl font-bold text-slate-900 dark:text-zinc-100 group-hover:text-corp-blue dark:group-hover:text-gold-400 transition-colors">{value}</h3>
         </div>
         <div className={`p-3 bg-gradient-to-br ${color} rounded-xl shadow-lg`}>
           <Icon className="w-6 h-6 text-white dark:text-black" />
         </div>
       </div>
-      <div className="mt-4 flex items-center gap-2 relative z-10">
-        <TrendingUp className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
-        <span className="text-sm text-slate-500 dark:text-zinc-400 font-medium">{trend}</span>
+      <div className="mt-4 flex items-center justify-between relative z-10">
+        <div className="flex items-center gap-2">
+          <TrendingUp className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
+          <span className="text-sm text-slate-500 dark:text-zinc-400 font-medium">{trend}</span>
+        </div>
+        <ChevronRight className="w-4 h-4 text-slate-300 dark:text-zinc-600 group-hover:text-corp-blue dark:group-hover:text-gold-500 transition-colors" />
       </div>
     </div>
   );
@@ -157,7 +234,7 @@ function StatCard({ title, value, icon: Icon, trend, color }: any) {
 function MilestoneItem({ milestone }: { milestone: MilestoneResult }) {
   const Icon = milestone.type === 'BIRTHDAY' ? Cake : Briefcase;
   const isBirthday = milestone.type === 'BIRTHDAY';
-
+  
   return (
     <div className="flex items-center gap-4 p-3 rounded-xl hover:bg-white/40 dark:hover:bg-zinc-800/40 transition-colors group border border-transparent hover:border-white/50 dark:hover:border-zinc-700/50">
       <div className={cn(
@@ -170,10 +247,10 @@ function MilestoneItem({ milestone }: { milestone: MilestoneResult }) {
       </div>
       <div className="flex-1 min-w-0">
         <h4 className="text-sm font-bold text-slate-900 dark:text-zinc-100 truncate group-hover:text-corp-blue dark:group-hover:text-gold-400 transition-colors">
-          {milestone.employee.firstName} {milestone.employee.lastName}
+          {milestone.employee.name}
         </h4>
         <p className="text-xs text-slate-500 dark:text-zinc-400">
-          {milestone.type === 'BIRTHDAY' ? 'Birthday' : `${milestone.years}yr Anniversary`}
+          {milestone.type === 'BIRTHDAY' ? 'Birthday' : `${milestone.years}yr Work-Anniversary`}
           {milestone.isToday ? ' • Today' : ` • In ${milestone.daysUntil} days`}
         </p>
       </div>

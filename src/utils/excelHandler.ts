@@ -13,14 +13,14 @@ export async function parseExcel(file: File): Promise<Partial<Employee>[]> {
         const json = XLSX.utils.sheet_to_json(worksheet);
         
         const employees: Partial<Employee>[] = json.map((row: any) => ({
-          firstName: row['First Name'] || row.firstName,
-          lastName: row['Last Name'] || row.lastName,
-          email: row['Email'] || row.email,
-          department: row['Department'] || row.department,
-          jobTitle: row['Job Title'] || row.jobTitle,
-          dob: formatDate(row['Date of Birth'] || row.dob),
-          joinedDate: formatDate(row['Joined Date'] || row.joinedDate),
-          status: (row['Status'] || row.status || 'active').toLowerCase() as 'active' | 'inactive',
+          employeeId: String(row['employee_id'] || row.employeeId || ''),
+          name: row['name'] || row.Name || '',
+          department: row['department'] || row.Department || '',
+          email: row['email'] || row.Email || '',
+          phone: String(row['phone'] || row.Phone || ''),
+          dob: formatDate(row['date_of_birth'] || row.dob),
+          joinedDate: formatDate(row['joined_date'] || row.joinedDate),
+          status: 'active',
         }));
         
         resolve(employees);
@@ -35,14 +35,13 @@ export async function parseExcel(file: File): Promise<Partial<Employee>[]> {
 
 export function exportToExcel(employees: Employee[]) {
   const data = employees.map(emp => ({
-    'First Name': emp.firstName,
-    'Last Name': emp.lastName,
-    'Email': emp.email,
-    'Department': emp.department,
-    'Job Title': emp.jobTitle,
-    'Date of Birth': emp.dob,
-    'Joined Date': emp.joinedDate,
-    'Status': emp.status
+    'employee_id': emp.employeeId,
+    'name': emp.name,
+    'department': emp.department,
+    'email': emp.email,
+    'phone': emp.phone,
+    'date_of_birth': emp.dob,
+    'joined_date': emp.joinedDate
   }));
 
   const worksheet = XLSX.utils.json_to_sheet(data);
@@ -53,14 +52,13 @@ export function exportToExcel(employees: Employee[]) {
 
 export function downloadTemplate() {
   const template = [{
-    'First Name': 'John',
-    'Last Name': 'Doe',
-    'Email': 'john.doe@example.com',
-    'Department': 'Engineering',
-    'Job Title': 'Senior Developer',
-    'Date of Birth': '1990-01-01',
-    'Joined Date': '2020-05-15',
-    'Status': 'active'
+    'employee_id': 'B150-00014998',
+    'name': 'Mr.Paul',
+    'department': 'IT',
+    'email': 'paul.huang1@pouchen.com',
+    'phone': '09-955599968 (2058)',
+    'date_of_birth': '1978-08-28',
+    'joined_date': '2016-03-14'
   }];
 
   const worksheet = XLSX.utils.json_to_sheet(template);
