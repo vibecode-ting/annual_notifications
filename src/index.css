@@ -1,0 +1,64 @@
+@import "tailwindcss";
+
+@theme {
+  --color-gold-400: #facc15;
+  --color-gold-500: #eab308;
+  --color-gold-600: #ca8a04;
+  --color-gold-700: #a16207;
+  
+  --color-corp-cyan: #e0f2fe;
+  --color-corp-blue: #1e3a8a;
+  --color-corp-grey: #64748b;
+}
+
+@layer base {
+  body {
+    @apply bg-gradient-to-br from-corp-cyan to-white text-slate-800 min-h-screen
+           dark:from-black dark:to-zinc-950 dark:text-zinc-100 transition-colors duration-500;
+  }
+}
+
+@layer components {
+  .glass-panel {
+    @apply bg-white/60 backdrop-blur-xl border border-white/50 shadow-xl shadow-slate-200/40
+           dark:bg-zinc-900/40 dark:border-gold-500/20 dark:shadow-[0_8px_30px_rgba(234,179,8,0.04)] transition-all;
+  }
+  
+  .glass-input {
+    @apply w-full px-4 py-2.5 bg-white/50 border border-slate-200/60 rounded-lg text-sm text-slate-900 placeholder-slate-400
+           focus:bg-white focus:border-corp-blue focus:ring-2 focus:ring-corp-blue/20 outline-none
+           dark:bg-zinc-950/50 dark:border-zinc-800/80 dark:text-zinc-100 dark:placeholder-zinc-500
+           dark:focus:bg-zinc-900 dark:focus:border-gold-500/50 dark:focus:ring-2 dark:focus:ring-gold-500/20 transition-all;
+  }
+
+  .btn-primary {
+    @apply px-4 py-2.5 text-sm font-semibold rounded-lg shadow-md transition-all
+           bg-corp-blue text-white hover:bg-corp-blue/90 hover:shadow-lg
+           dark:bg-gradient-to-r dark:from-gold-600 dark:to-gold-500 dark:text-black dark:hover:from-gold-500 dark:hover:to-gold-400;
+  }
+  
+  .btn-secondary {
+    @apply px-4 py-2.5 text-sm font-medium rounded-lg transition-all
+           bg-white/80 border border-slate-200 text-slate-700 hover:bg-white
+           dark:bg-zinc-900/50 dark:border-gold-500/20 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-gold-400;
+  }
+
+  .text-highlight {
+    @apply text-corp-blue dark:text-gold-500 font-bold;
+  }
+
+  .icon-highlight {
+    @apply p-2.5 rounded-xl bg-corp-blue/10 text-corp-blue
+           dark:bg-gold-500/10 dark:text-gold-500;
+  }
+
+  .table-header {
+    @apply px-6 py-4 bg-slate-50/50 text-slate-500 uppercase text-[10px] font-bold tracking-wider
+           dark:bg-zinc-900/50 dark:text-zinc-400 dark:border-b dark:border-zinc-800;
+  }
+
+  .table-row-hover {
+    @apply hover:bg-white/40 transition-colors
+           dark:hover:bg-zinc-800/40;
+  }
+}
