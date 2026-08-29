@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@custom-variant dark (&:is(.dark, .dark *));
 
 @theme {
   --color-gold-400: #facc15;
@@ -12,6 +13,9 @@
 }
 
 @layer base {
+  html {
+    font-size: 105%; /* Slightly zoom the app proportionally */
+  }
   body {
     @apply bg-gradient-to-br from-corp-cyan to-white text-slate-800 min-h-screen
            dark:from-black dark:to-zinc-950 dark:text-zinc-100 transition-colors duration-500;

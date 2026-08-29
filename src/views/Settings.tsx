@@ -102,25 +102,44 @@ export default function Settings() {
           <div className="space-y-8 animate-in fade-in duration-300">
             {/* Email SMTP */}
             <div className="glass-panel rounded-2xl overflow-hidden">
-              <div className="p-6 border-b border-slate-200/50 dark:border-zinc-800/50 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-lg">
-                    <Mail className="w-5 h-5" />
+              <div className="p-6 border-b border-slate-200/50 dark:border-zinc-800/50 flex flex-col gap-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-lg">
+                      <Mail className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold text-slate-900 dark:text-zinc-100">Email (SMTP)</h3>
+                      <p className="text-xs text-slate-500 dark:text-zinc-400">Send milestone alerts via email.</p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="text-sm font-bold text-slate-900 dark:text-zinc-100">Email (SMTP)</h3>
-                    <p className="text-xs text-slate-500 dark:text-zinc-400">Send milestone alerts via email.</p>
-                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      checked={settings.smtp?.enabled ?? false} 
+                      onChange={(e) => setSettings({ ...settings, smtp: { ...(settings.smtp || { host: '', port: 587, user: '' }), enabled: e.target.checked }})}
+                      className="sr-only peer" 
+                    />
+                    <div className="w-11 h-6 bg-slate-200 dark:bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-corp-blue dark:peer-checked:bg-gold-500"></div>
+                  </label>
                 </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input 
-                    type="checkbox" 
-                    checked={settings.smtp?.enabled} 
-                    onChange={(e) => setSettings({ ...settings, smtp: { ...(settings.smtp || { host: '', port: 587, user: '' }), enabled: e.target.checked }})}
-                    className="sr-only peer" 
-                  />
-                  <div className="w-11 h-6 bg-slate-200 dark:bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-corp-blue dark:peer-checked:bg-gold-500"></div>
-                </label>
+                
+                {/* Send Directly Toggle at the top level */}
+                <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-zinc-800">
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-zinc-100">Send Directly to Employees</h3>
+                    <p className="text-xs text-slate-500 dark:text-zinc-400">Email the employee directly and CC you.</p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      checked={settings.smtp?.sendToEmployee ?? false}
+                      onChange={(e) => setSettings({ ...settings, smtp: { ...(settings.smtp || { host: '', port: 587, user: '' }), sendToEmployee: e.target.checked }})}
+                      className="sr-only peer" 
+                    />
+                    <div className="w-11 h-6 bg-slate-200 dark:bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-corp-blue dark:peer-checked:bg-gold-500"></div>
+                  </label>
+                </div>
               </div>
               {settings.smtp?.enabled && (
                 <div className="p-6 grid grid-cols-2 gap-4 bg-slate-50/30 dark:bg-zinc-900/30">
@@ -142,25 +161,6 @@ export default function Settings() {
                       className="glass-input" 
                     />
                   </div>
-                  <div className="col-span-2 mt-2">
-                    <label className="flex items-start gap-3 p-4 bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 cursor-pointer hover:border-corp-blue dark:hover:border-gold-500 transition-colors">
-                      <div className="flex items-center h-5 mt-0.5">
-                        <input 
-                          type="checkbox" 
-                          className="w-4 h-4 rounded border-slate-300 dark:border-zinc-700" 
-                          checked={settings.smtp?.sendToEmployee ?? false}
-                          onChange={(e) => setSettings({ ...settings, smtp: { ...settings.smtp!, sendToEmployee: e.target.checked }})}
-                        />
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-slate-900 dark:text-zinc-100">Send Directly to Employees</p>
-                        <p className="text-xs text-slate-500 dark:text-zinc-400 mt-1 leading-relaxed">
-                          When enabled, emails are automatically sent directly to each employee's inbox, and you (the registered user) are added as a CC. 
-                          If disabled, emails are strictly sent only to your registered email address.
-                        </p>
-                      </div>
-                    </label>
-                  </div>
                 </div>
               )}
             </div>
@@ -180,7 +180,7 @@ export default function Settings() {
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input 
                     type="checkbox" 
-                    checked={settings.teams?.enabled} 
+                    checked={settings.teams?.enabled ?? false} 
                     onChange={(e) => setSettings({ ...settings, teams: { ...(settings.teams || { webhookUrl: '' }), enabled: e.target.checked }})}
                     className="sr-only peer" 
                   />
@@ -215,7 +215,7 @@ export default function Settings() {
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input 
                     type="checkbox" 
-                    checked={settings.telegram?.enabled} 
+                    checked={settings.telegram?.enabled ?? false} 
                     onChange={(e) => setSettings({ ...settings, telegram: { ...(settings.telegram || { botToken: '', chatId: '' }), enabled: e.target.checked }})}
                     className="sr-only peer" 
                   />
@@ -297,33 +297,56 @@ export default function Settings() {
                 </div>
 
                 {settings.templates.type === 'card' && (
-                  <div className="space-y-4 p-4 bg-purple-500/5 rounded-xl border border-purple-500/20 relative">
+                  <div className="space-y-4 p-6 bg-purple-500/5 rounded-2xl border border-purple-500/20 relative shadow-inner">
                     {!isPro && (
-                      <div className="absolute inset-0 z-10 bg-white/60 dark:bg-zinc-950/60 backdrop-blur-[1px] flex flex-col items-center justify-center rounded-xl p-4 text-center">
-                        <Crown className="w-6 h-6 text-gold-500 mb-2" />
-                        <p className="text-sm font-bold text-slate-900 dark:text-zinc-100">Pro Feature</p>
-                        <p className="text-xs text-slate-500 dark:text-zinc-400 max-w-[220px] mb-3">Upgrade to customize the logo and footer text of your card templates.</p>
-                        <Link to="/admin/users" className="px-4 py-1.5 bg-purple-500 hover:bg-purple-600 text-white text-xs font-bold rounded-lg shadow-md transition-colors">Upgrade Now</Link>
+                      <div className="absolute inset-0 z-10 bg-white/60 dark:bg-zinc-950/60 backdrop-blur-[2px] flex flex-col items-center justify-center rounded-2xl p-4 text-center">
+                        <Crown className="w-8 h-8 text-gold-500 mb-2 drop-shadow-md" />
+                        <p className="text-lg font-bold text-slate-900 dark:text-zinc-100">Premium Card Features</p>
+                        <p className="text-sm text-slate-500 dark:text-zinc-400 max-w-[280px] mb-4">Upgrade to customize logos, add cover images, rich emojis, and file attachments to your milestones.</p>
+                        <Link to="/pricing" className="px-6 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white font-bold rounded-xl shadow-lg transition-all hover:-translate-y-0.5">Upgrade Now</Link>
                       </div>
                     )}
-                    <div className={cn("space-y-4", !isPro && "opacity-40 pointer-events-none")}>
-                      <div>
-                        <label className="block text-xs font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider mb-2">Company Logo URL</label>
-                        <input 
-                          value={settings.templates.logoUrl || ""}
-                          onChange={(e) => setSettings({ ...settings, templates: { ...settings.templates, logoUrl: e.target.value }})}
-                          placeholder="https://example.com/logo.png"
-                          className="glass-input"
-                        />
+                    <div className={cn("space-y-6", !isPro && "opacity-40 pointer-events-none")}>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="col-span-2 md:col-span-1">
+                          <label className="block text-xs font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider mb-2">Company Logo URL</label>
+                          <input 
+                            value={settings.templates.logoUrl || ""}
+                            onChange={(e) => setSettings({ ...settings, templates: { ...settings.templates, logoUrl: e.target.value }})}
+                            placeholder="https://example.com/logo.png"
+                            className="glass-input"
+                          />
+                        </div>
+                        <div className="col-span-2 md:col-span-1">
+                          <label className="block text-xs font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider mb-2">Cover Image URL</label>
+                          <input 
+                            value={settings.templates.coverImage || ""}
+                            onChange={(e) => setSettings({ ...settings, templates: { ...settings.templates, coverImage: e.target.value }})}
+                            placeholder="https://example.com/cover.jpg"
+                            className="glass-input"
+                          />
+                        </div>
                       </div>
+                      
                       <div>
                         <label className="block text-xs font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider mb-2">Card Footer Text</label>
                         <input 
                           value={settings.templates.detailsText || ""}
                           onChange={(e) => setSettings({ ...settings, templates: { ...settings.templates, detailsText: e.target.value }})}
-                          placeholder="Provided by HR Department"
+                          placeholder="🎉 Provided by HR Department 🎈"
                           className="glass-input"
                         />
+                      </div>
+
+                      <div className="flex gap-4">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input type="checkbox" className="rounded text-purple-600 focus:ring-purple-500" checked={settings.templates.includeEmojis ?? true} onChange={(e) => setSettings({ ...settings, templates: { ...settings.templates, includeEmojis: e.target.checked }})} />
+                          <span className="text-sm font-bold text-slate-700 dark:text-zinc-300">Allow Emoji Reactions ✨</span>
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input type="checkbox" className="rounded text-purple-600 focus:ring-purple-500" checked={settings.templates.allowAttachments ?? false} onChange={(e) => setSettings({ ...settings, templates: { ...settings.templates, allowAttachments: e.target.checked }})} />
+                          <span className="text-sm font-bold text-slate-700 dark:text-zinc-300">Allow Attachments 📎</span>
+                        </label>
                       </div>
                     </div>
                   </div>
@@ -370,7 +393,7 @@ export default function Settings() {
             </div>
             
             {!isPro && (
-               <Link to="/admin/users" className="block w-full">
+               <Link to="/pricing" className="block w-full">
                   <div className="p-6 bg-gradient-to-r from-amber-500/10 to-amber-600/10 dark:from-gold-500/10 dark:to-gold-600/10 border border-amber-500/30 dark:border-gold-500/30 rounded-2xl flex items-center justify-between hover:bg-amber-500/20 dark:hover:bg-gold-500/20 transition-colors cursor-pointer group">
                     <div className="flex items-center gap-4">
                       <div className="p-3 bg-amber-500/20 dark:bg-gold-500/20 rounded-xl">

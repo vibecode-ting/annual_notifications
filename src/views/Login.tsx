@@ -53,9 +53,7 @@ export default function Login() {
       
       <div className="max-w-md w-full glass-panel rounded-2xl p-8 relative z-10">
         <div className="flex flex-col items-center mb-8">
-          <div className="p-3 bg-gradient-to-br from-corp-blue to-indigo-700 dark:from-gold-600 dark:to-gold-500 rounded-xl mb-4 shadow-lg shadow-corp-blue/30 dark:shadow-gold-500/20">
-            <Bell className="w-8 h-8 text-white dark:text-black" />
-          </div>
+          <img src="/logo.svg" alt="Milestone Logo" className="w-16 h-16 rounded-2xl mb-4 shadow-lg shadow-indigo-500/20" />
           <h1 className="text-2xl font-bold text-slate-900 dark:text-zinc-100">
             {isSignUp ? 'Create an Account' : 'Welcome Back'}
           </h1>

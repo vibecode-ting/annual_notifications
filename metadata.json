@@ -1,5 +1,5 @@
 {
-  "name": "Employee Milestone Platform",
+  "name": "Milestone",
   "description": "Cloud-hosted platform for managing employee milestones, birthdays, and work anniversaries with automated alerts via Teams, Telegram, and Email.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]

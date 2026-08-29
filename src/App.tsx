@@ -8,6 +8,7 @@ import Employees from './views/Employees';
 import Settings from './views/Settings';
 import Login from './views/Login';
 import AdminUsers from './views/AdminUsers';
+import Pricing from './views/Pricing';
 
 export default function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -52,6 +53,14 @@ export default function App() {
                 element={
                   <AuthRoute>
                     <AdminUsers />
+                  </AuthRoute>
+                } 
+              />
+              <Route 
+                path="/pricing" 
+                element={
+                  <AuthRoute>
+                    <Pricing />
                   </AuthRoute>
                 } 
               />

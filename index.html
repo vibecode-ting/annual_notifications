@@ -2,13 +2,22 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+    <link rel="alternate icon" type="image/png" href="/logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Employee Milestone Platform</title>
+    <title>Milestone</title>
     <meta name="description" content="Manage employee birthdays and work anniversaries with automated alerts." />
-    <meta property="og:title" content="Employee Milestone Platform" />
+    <meta property="og:title" content="Milestone" />
     <meta property="og:description" content="Manage employee birthdays and work anniversaries with automated alerts." />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
+    <script>
+      if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

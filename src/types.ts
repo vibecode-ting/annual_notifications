@@ -51,6 +51,9 @@ export interface AlertSettings {
     type?: 'normal' | 'card';
     logoUrl?: string;
     detailsText?: string;
+    coverImage?: string;
+    includeEmojis?: boolean;
+    allowAttachments?: boolean;
     birthday: string;
     anniversary: string;
   };
