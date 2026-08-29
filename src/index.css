@@ -17,6 +17,7 @@
     font-size: 105%; /* Slightly zoom the app proportionally */
   }
   body {
+    font-family: 'Roboto', 'Noto Sans Myanmar', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
     @apply bg-gradient-to-br from-corp-cyan to-white text-slate-800 min-h-screen
            dark:from-black dark:to-zinc-950 dark:text-zinc-100 transition-colors duration-500;
   }

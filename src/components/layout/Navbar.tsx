@@ -68,9 +68,9 @@ export function Navbar({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (val
       onMouseEnter={() => setIsOpen(true)}
       onMouseLeave={() => setIsOpen(false)}
     >
-      <div className={cn("flex items-center gap-3 mb-10 transition-all", isOpen ? "px-2" : "justify-center")}>
-        <img src="/logo.svg" alt="Milestone Logo" className="w-8 h-8 rounded-lg shadow-[0_0_15px_rgba(168,85,247,0.3)] shrink-0" />
-        {isOpen && <h1 className="text-xl font-bold text-slate-900 dark:text-zinc-100 tracking-tight whitespace-nowrap opacity-100 animate-in fade-in duration-300">Milestone</h1>}
+      <div className={cn("flex items-center mb-10 transition-all", isOpen ? "justify-center gap-4 w-full" : "justify-center gap-0 w-full")}>
+        <img src="/logo.svg" alt="Milestone Logo" className={cn("rounded-xl shadow-[0_0_15px_rgba(168,85,247,0.3)] shrink-0 transition-all", isOpen ? "w-12 h-12" : "w-8 h-8")} />
+        {isOpen && <h1 className="text-2xl font-bold text-slate-900 dark:text-zinc-100 tracking-tight whitespace-nowrap opacity-100 animate-in fade-in duration-300">Milestone</h1>}
       </div>
 
       <div className="flex-1 space-y-1 overflow-x-hidden">
