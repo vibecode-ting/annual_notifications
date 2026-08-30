@@ -23,21 +23,42 @@ jobs:
           node-version: '18'
           cache: 'npm'
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Print Node & NPM versions
+        run: |
+          node -v
+          npm -v
+          echo "Listing lockfiles in repo root:"
+          ls -la | grep -E 'package-lock.json|yarn.lock|pnpm-lock.yaml|bun.lock' || true
+
+      - name: Install dependencies (use npm install because package-lock.json may be missing)
+        run: npm install
 
       - name: Verify .env presence
         run: |
           if [ -f .env ]; then
             echo ".env found in repo — proceeding with build using committed env (user accepted risk)."
           else
-            echo "Warning: .env not found in repository. Build may fail. To use secrets, update workflow to write .env from secrets."
+            echo "Warning: .env not found in repository. Build may fail."
           fi
 
-      - name: Build
+      - name: Build (capture output)
         env:
           NODE_ENV: production
-        run: npm run build
+        run: |
+          # capture stdout+stderr to build.log while still returning non-zero exit code on failure
+          set -o pipefail
+          npm run build 2>&1 | tee build.log
+          # fail the step if build failed
+          if [ "${PIPESTATUS[0]}" -ne 0 ]; then
+            echo "Build failed; see build.log"
+            exit 1
+          fi
+
+      - name: Upload build log artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log
+          path: build.log
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v3
