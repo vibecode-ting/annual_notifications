@@ -14,7 +14,7 @@ export default function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
-    <Router>
+    <Router basename={import.meta.env.BASE_URL}>
       <AuthProvider>
         <div className="min-h-screen flex">
           <Navbar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
