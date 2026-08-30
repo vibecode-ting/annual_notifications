@@ -8,7 +8,6 @@ on:
 permissions:
   contents: read
   pages: write
-  id-token: write
 
 jobs:
   build-and-deploy:
@@ -23,14 +22,14 @@ jobs:
           node-version: '18'
           cache: 'npm'
 
-      - name: Print Node & NPM versions
+      - name: Print environment info
         run: |
           node -v
           npm -v
-          echo "Listing lockfiles in repo root:"
+          echo "Listing root lockfiles:"
           ls -la | grep -E 'package-lock.json|yarn.lock|pnpm-lock.yaml|bun.lock' || true
 
-      - name: Install dependencies (use npm install because package-lock.json may be missing)
+      - name: Install dependencies
         run: npm install
 
       - name: Verify .env presence
@@ -45,28 +44,24 @@ jobs:
         env:
           NODE_ENV: production
         run: |
-          # capture stdout+stderr to build.log while still returning non-zero exit code on failure
           set -o pipefail
           npm run build 2>&1 | tee build.log
-          # fail the step if build failed
           if [ "${PIPESTATUS[0]}" -ne 0 ]; then
             echo "Build failed; see build.log"
             exit 1
           fi
 
-      - name: Upload build log artifact
+      - name: Upload build log
         uses: actions/upload-artifact@v4
         with:
           name: build-log
           path: build.log
 
-      - name: Configure GitHub Pages
-        uses: actions/configure-pages@v3
-
-      - name: Upload artifact (dist)
-        uses: actions/upload-pages-artifact@v1
+      - name: Deploy to gh-pages
+        uses: peaceiris/actions-gh-pages@v3
         with:
-          path: ./dist
-
-      - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v1
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+          publish_branch: gh-pages
+          user_name: github-actions[bot]
+          user_email: 41898282+github-actions[bot]@users.noreply.github.com
