@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Background -->
+  <rect width="512" height="512" rx="128" fill="#0A0B2E" />
+  
+  <!-- Left Stem -->
+  <polygon points="120,180 190,180 190,370 120,370" fill="#4F46E5" />
+  
+  <!-- Right Stem -->
+  <polygon points="322,180 392,180 392,370 322,370" fill="#4F46E5" />
+  
+  <!-- Shadow under left diagonal -->
+  <polygon points="120,180 190,250 190,280 120,210" fill="#000000" opacity="0.25" />
+  
+  <!-- Shadow under right diagonal -->
+  <polygon points="392,180 322,250 322,280 392,210" fill="#000000" opacity="0.25" />
+  
+  <!-- Left Diagonal -->
+  <polygon points="120,180 190,180 256,246 256,316" fill="#A855F7" />
+  
+  <!-- Right Diagonal -->
+  <polygon points="392,180 322,180 256,246 256,316" fill="#9333EA" />
+  
+  <!-- Star -->
+  <path d="M 256 60 Q 256 100 296 100 Q 256 100 256 140 Q 256 100 216 100 Q 256 100 256 60 Z" fill="#A855F7" />
+  
+  <!-- Dots -->
+  <circle cx="256" cy="152" r="5" fill="#A855F7" />
+  <circle cx="256" cy="168" r="3" fill="#A855F7" />
+  
+  <!-- Text -->
+  <text x="256" y="440" font-family="system-ui, -apple-system, sans-serif" font-weight="800" font-size="48" fill="#FFFFFF" text-anchor="middle" letter-spacing="4">Milestone</text>
+</svg>
