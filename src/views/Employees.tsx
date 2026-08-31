@@ -10,7 +10,7 @@ import { parseExcel, exportToExcel, downloadTemplate } from '../utils/excelHandl
 import { cn } from '../lib/utils';
 
 export default function Employees() {
-  const { user } = useAuth();
+  const { user, appUser } = useAuth();
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -18,6 +18,8 @@ export default function Employees() {
   const [showImportModal, setShowImportModal] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
   const [importPreview, setImportPreview] = useState<Partial<Employee>[]>([]);
+
+  const planLimit = appUser?.role === 'pro_plus' || appUser?.role === 'admin' ? Infinity : appUser?.role === 'pro' ? 1000 : 100;
 
   useEffect(() => {
     fetchEmployees();
@@ -39,6 +41,11 @@ export default function Employees() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!editingEmployee && employees.length >= planLimit) {
+      alert(`Your current plan limits you to ${planLimit} employees. Please upgrade to add more.`);
+      return;
+    }
+
     const formData = new FormData(e.currentTarget);
     const data = {
       employeeId: formData.get('employeeId') as string,
@@ -91,6 +98,10 @@ export default function Employees() {
 
   const handleBulkCommit = async () => {
     if (!user) return;
+    if (employees.length + importPreview.length > planLimit) {
+      alert(`Importing these will exceed your current plan limit of ${planLimit} employees. Please upgrade to add more.`);
+      return;
+    }
     setLoading(true);
     try {
       const batch = writeBatch(db);

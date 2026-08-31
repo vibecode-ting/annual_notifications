@@ -5,6 +5,7 @@ import { cn } from '../lib/utils';
 import { useAuth } from '../contexts/AuthContext';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
+import { useTranslation } from 'react-i18next';
 
 const plans = {
   free: { name: 'Free Forever', price: 0, usdt: 0 },
@@ -27,6 +28,7 @@ export default function Pricing() {
   const [selectedPlan, setSelectedPlan] = useState<keyof typeof plans | null>(null);
   const [timeLeft, setTimeLeft] = useState(300); // 5 minutes
   const { user, appUser } = useAuth();
+  const { t } = useTranslation();
 
   useEffect(() => {
     let timer: any;
@@ -169,7 +171,7 @@ export default function Pricing() {
     <div className="max-w-6xl mx-auto space-y-12 animate-in fade-in duration-500 pb-20 px-4">
       <div className="text-center space-y-4 pt-8">
         <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900 dark:text-zinc-100">
-          Upgrade to <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-indigo-600">PRO</span>
+          {t('Upgrade to')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-indigo-600">PRO</span>
         </h1>
         <p className="text-lg text-slate-500 dark:text-zinc-400 max-w-2xl mx-auto">
           Unlock beautiful custom card templates, upload your own logos, and connect to thousands of employees. Select your plan below.
@@ -195,7 +197,7 @@ export default function Pricing() {
                 Popular & Recommended
               </div>
             )}
-            {key === 'free' && appUser?.role !== 'pro' && appUser?.role !== 'admin' && (
+            {key === 'free' && appUser?.role !== 'pro' && appUser?.role !== 'pro_plus' && appUser?.role !== 'admin' && (
               <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-slate-200 dark:bg-zinc-700 rounded-full text-[10px] font-bold text-slate-600 dark:text-zinc-300 uppercase tracking-wider shadow-sm whitespace-nowrap">
                 Your Current Plan
               </div>
@@ -225,7 +227,7 @@ export default function Pricing() {
               )}
               <li className={cn("flex items-start gap-2 text-sm", !key.includes('life') ? "text-slate-600 dark:text-zinc-300" : "")}>
                 <CheckCircle2 className={cn("w-5 h-5 shrink-0", key === 'pro_plus_life' ? "text-gold-400" : key.includes('plus') ? "text-gold-500" : "text-purple-500")} /> 
-                {key === 'free' ? 'Up to 10 Employees' : key.includes('plus') ? 'Unlimited Employees' : 'Up to 1,000 Employees'}
+                {key === 'free' ? 'Up to 100 Employees' : key.includes('plus') ? 'Unlimited Employees' : 'Up to 1,000 Employees'}
               </li>
               <li className={cn("flex items-start gap-2 text-sm", !key.includes('life') ? "text-slate-600 dark:text-zinc-300" : "")}>
                 <CheckCircle2 className={cn("w-5 h-5 shrink-0", key === 'pro_plus_life' ? "text-gold-400" : key.includes('plus') ? "text-gold-500" : "text-purple-500")} /> 
@@ -233,7 +235,7 @@ export default function Pricing() {
               </li>
               <li className={cn("flex items-start gap-2 text-sm", !key.includes('life') ? "text-slate-600 dark:text-zinc-300" : "")}>
                 <Headphones className={cn("w-5 h-5 shrink-0", key === 'pro_plus_life' ? "text-gold-400" : key.includes('plus') ? "text-gold-500" : "text-purple-500")} /> 
-                {key === 'free' ? 'Standard Support' : key.includes('life') ? 'Priority Customer Support' : key.includes('plus') ? 'Customer Support' : 'Card Templates'}
+                {key === 'free' ? 'No Support Provided' : key.includes('life') ? 'Priority Customer Support' : key.includes('plus') ? 'Customer Support' : 'Card Templates'}
               </li>
               {key === 'pro_plus_life' && (
                 <li className="flex items-start gap-2 text-sm">

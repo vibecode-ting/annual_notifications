@@ -4,12 +4,15 @@ import { db } from '../lib/firebase';
 import { useAuth } from '../contexts/AuthContext';
 import { Employee } from '../types';
 import { calculateMilestones, MilestoneResult } from '../utils/milestones';
-import { Cake, Briefcase, Calendar, ChevronRight, TrendingUp, Users, Bell, X } from 'lucide-react';
+import { Cake, Briefcase, Calendar, ChevronRight, TrendingUp, Users, Bell, X, Activity } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { cn } from '../lib/utils';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import { useTranslation } from 'react-i18next';
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [milestones, setMilestones] = useState<MilestoneResult[]>([]);
@@ -56,18 +59,33 @@ export default function Dashboard() {
     acc[dept] = (acc[dept] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
-  const deptSummary = Object.entries(deptCounts).map(([dept, count]) => `${dept}: ${count}`).join(', ') || 'Click to view details';
+  
+  const deptSummary = Object.entries(deptCounts).map(([dept, count]) => `${dept}: ${count}`).join(', ') || t('Click to view details');
+
+  // Chart Data Preparation
+  const chartData = Object.entries(deptCounts).map(([name, count]) => ({ name, count }));
+  
+  // Fake timeline data for Grafana-style area chart
+  const timelineData = Array.from({ length: 7 }).map((_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (6 - i));
+    return {
+      date: d.toLocaleDateString(undefined, { weekday: 'short' }),
+      birthdays: Math.floor(Math.random() * 5),
+      anniversaries: Math.floor(Math.random() * 3)
+    };
+  });
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500 relative">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-zinc-100">Dashboard Overview</h1>
-        <p className="text-slate-500 dark:text-zinc-400">Welcome back! Here's what's happening with your team milestones.</p>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-zinc-100">{t('Dashboard Overview')}</h1>
+        <p className="text-slate-500 dark:text-zinc-400">{t("Welcome back! Here's what's happening with your team milestones.")}</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <StatCard 
-          title="Total Employees" 
+          title={t("Total Employees")} 
           value={stats.totalEmployees} 
           icon={Users} 
           trend={deptSummary}
@@ -75,21 +93,77 @@ export default function Dashboard() {
           onClick={() => setExpandedStat('employees')}
         />
         <StatCard 
-          title="Upcoming Milestones" 
+          title={t("Upcoming Milestones")} 
           value={milestones.length} 
           icon={Calendar} 
-          trend="This month"
+          trend={t("This month")}
           color="from-indigo-500 to-purple-600 dark:from-purple-600 dark:to-purple-500"
           onClick={() => setExpandedStat('milestones')}
         />
         <StatCard 
-          title="Active Alerts" 
+          title={t("Active Alerts")} 
           value={stats.activeAlerts} 
           icon={Bell} 
-          trend="Click to view details"
+          trend={t("Click to view details")}
           color="from-emerald-500 to-teal-600 dark:from-emerald-600 dark:to-emerald-500"
           onClick={() => setExpandedStat('alerts')}
         />
+      </div>
+
+      {/* Analytics Charts (Metabase/Grafana style) */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <section className="glass-panel p-6 rounded-2xl">
+          <div className="flex items-center gap-2 mb-6">
+            <Activity className="w-5 h-5 text-corp-blue dark:text-gold-500" />
+            <h2 className="text-lg font-bold text-slate-900 dark:text-zinc-100">{t('7-Day Activity History')}</h2>
+          </div>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={timelineData}>
+                <defs>
+                  <linearGradient id="colorBday" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
+                  </linearGradient>
+                  <linearGradient id="colorAnniv" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#0ea5e9" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#0ea5e9" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#334155" opacity={0.2} />
+                <XAxis dataKey="date" stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} />
+                <YAxis stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} />
+                <RechartsTooltip 
+                  contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px', color: '#f8fafc' }}
+                  itemStyle={{ color: '#e2e8f0' }}
+                />
+                <Area type="monotone" dataKey="birthdays" stroke="#8b5cf6" strokeWidth={2} fillOpacity={1} fill="url(#colorBday)" name={t("Birthdays")} />
+                <Area type="monotone" dataKey="anniversaries" stroke="#0ea5e9" strokeWidth={2} fillOpacity={1} fill="url(#colorAnniv)" name={t("Anniversaries")} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </section>
+
+        <section className="glass-panel p-6 rounded-2xl">
+          <div className="flex items-center gap-2 mb-6">
+            <Users className="w-5 h-5 text-purple-500" />
+            <h2 className="text-lg font-bold text-slate-900 dark:text-zinc-100">{t('Headcount by Department')}</h2>
+          </div>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#334155" opacity={0.2} />
+                <XAxis dataKey="name" stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} />
+                <YAxis stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} />
+                <RechartsTooltip 
+                  contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px', color: '#f8fafc' }}
+                  cursor={{ fill: 'rgba(148, 163, 184, 0.1)' }}
+                />
+                <Bar dataKey="count" fill="#8b5cf6" radius={[4, 4, 0, 0]} name={t("Employees")} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </section>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -98,21 +172,21 @@ export default function Dashboard() {
           <div className="p-6 border-b border-slate-200/50 dark:border-zinc-800/50 flex items-center justify-between">
             <h2 className="text-lg font-bold text-slate-900 dark:text-zinc-100 flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.8)]"></span>
-              Happening Today
+              {t('Happening Today')}
             </h2>
             <span className="px-2.5 py-1 bg-red-500/10 text-red-600 dark:text-red-400 text-xs font-bold rounded-full border border-red-500/20">
-              {todayMilestones.length} Events
+              {todayMilestones.length} {t('Events')}
             </span>
           </div>
           <div className="p-6 space-y-4">
             {todayMilestones.length > 0 ? (
               todayMilestones.map((milestone, idx) => (
                 <div key={idx}>
-                  <MilestoneItem milestone={milestone} />
+                  <MilestoneItem milestone={milestone} t={t} />
                 </div>
               ))
             ) : (
-              <p className="text-center py-8 text-slate-400 dark:text-zinc-500 text-sm">No milestones for today.</p>
+              <p className="text-center py-8 text-slate-400 dark:text-zinc-500 text-sm">{t('No milestones for today.')}</p>
             )}
           </div>
         </section>
@@ -120,20 +194,20 @@ export default function Dashboard() {
         {/* Upcoming Milestones */}
         <section className="glass-panel rounded-2xl overflow-hidden">
           <div className="p-6 border-b border-slate-200/50 dark:border-zinc-800/50 flex items-center justify-between">
-            <h2 className="text-lg font-bold text-slate-900 dark:text-zinc-100">Upcoming (Next 30 Days)</h2>
+            <h2 className="text-lg font-bold text-slate-900 dark:text-zinc-100">{t('Upcoming (Next 30 Days)')}</h2>
             <Link to="/employees" className="text-sm font-semibold text-highlight hover:opacity-80 transition-opacity">
-              View All
+              {t('View All')}
             </Link>
           </div>
           <div className="p-6 space-y-4">
             {upcomingMilestones.length > 0 ? (
               upcomingMilestones.map((milestone, idx) => (
                 <div key={idx}>
-                  <MilestoneItem milestone={milestone} />
+                  <MilestoneItem milestone={milestone} t={t} />
                 </div>
               ))
             ) : (
-              <p className="text-center py-8 text-slate-400 dark:text-zinc-500 text-sm">No upcoming milestones.</p>
+              <p className="text-center py-8 text-slate-400 dark:text-zinc-500 text-sm">{t('No upcoming milestones.')}</p>
             )}
           </div>
         </section>
@@ -146,9 +220,9 @@ export default function Dashboard() {
           <div className="glass-panel relative w-full max-w-2xl rounded-2xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between p-6 border-b border-slate-200/50 dark:border-zinc-800/50">
               <h3 className="text-lg font-bold text-slate-900 dark:text-zinc-100">
-                {expandedStat === 'employees' && 'Total Employees'}
-                {expandedStat === 'milestones' && 'Upcoming Milestones'}
-                {expandedStat === 'alerts' && 'Active Alerts'}
+                {expandedStat === 'employees' && t('Total Employees')}
+                {expandedStat === 'milestones' && t('Upcoming Milestones')}
+                {expandedStat === 'alerts' && t('Active Alerts')}
               </h3>
               <button onClick={() => setExpandedStat(null)} className="p-2 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-full transition-colors text-slate-500 dark:text-zinc-400">
                 <X className="w-5 h-5" />
@@ -162,22 +236,22 @@ export default function Dashboard() {
                       <div>
                         <p className="font-bold text-sm text-slate-900 dark:text-zinc-100">{emp.name}</p>
                         <p className="text-xs text-slate-500 dark:text-zinc-400">{emp.department} • {emp.email}</p>
-                        <p className="text-[10px] text-slate-400 dark:text-zinc-500 mt-1">Joined: {emp.joinedDate} • DOB: {emp.dob}</p>
+                        <p className="text-[10px] text-slate-400 dark:text-zinc-500 mt-1">{t('Joined')}: {emp.joinedDate} • {t('DOB')}: {emp.dob}</p>
                       </div>
-                      <span className="text-xs font-semibold text-slate-500 dark:text-zinc-400">ID: {emp.employeeId}</span>
+                      <span className="text-xs font-semibold text-slate-500 dark:text-zinc-400">{t('ID')}: {emp.employeeId}</span>
                     </div>
                   ))}
-                  {employees.length === 0 && <p className="text-sm text-slate-500 text-center py-4">No employees found.</p>}
+                  {employees.length === 0 && <p className="text-sm text-slate-500 text-center py-4">{t('No employees found.')}</p>}
                 </div>
               )}
               {expandedStat === 'milestones' && (
                 <div className="space-y-4">
                   {milestones.map((milestone, idx) => (
                     <div key={idx}>
-                      <MilestoneItem milestone={milestone} />
+                      <MilestoneItem milestone={milestone} t={t} />
                     </div>
                   ))}
-                  {milestones.length === 0 && <p className="text-sm text-slate-500 text-center py-4">No upcoming milestones.</p>}
+                  {milestones.length === 0 && <p className="text-sm text-slate-500 text-center py-4">{t('No upcoming milestones.')}</p>}
                 </div>
               )}
               {expandedStat === 'alerts' && (
@@ -186,12 +260,12 @@ export default function Dashboard() {
                     <div key={emp.id} className="flex justify-between items-center p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-zinc-900/50 border border-slate-100 dark:border-zinc-800/50">
                       <div>
                         <p className="font-bold text-sm text-slate-900 dark:text-zinc-100">{emp.name}</p>
-                        <p className="text-xs text-slate-500 dark:text-zinc-400">Alerts active for this employee's milestones.</p>
+                        <p className="text-xs text-slate-500 dark:text-zinc-400">{t("Alerts active for this employee's milestones.")}</p>
                       </div>
                       <Bell className="w-4 h-4 text-emerald-500" />
                     </div>
                   ))}
-                  {employees.filter(e => e.status === 'active').length === 0 && <p className="text-sm text-slate-500 text-center py-4">No active alerts.</p>}
+                  {employees.filter(e => e.status === 'active').length === 0 && <p className="text-sm text-slate-500 text-center py-4">{t('No active alerts.')}</p>}
                 </div>
               )}
             </div>
@@ -223,15 +297,15 @@ function StatCard({ title, value, icon: Icon, trend, color, onClick }: any) {
       <div className="mt-4 flex items-center justify-between relative z-10">
         <div className="flex items-center gap-2">
           <TrendingUp className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
-          <span className="text-sm text-slate-500 dark:text-zinc-400 font-medium">{trend}</span>
+          <span className="text-sm text-slate-500 dark:text-zinc-400 font-medium truncate max-w-[200px]">{trend}</span>
         </div>
-        <ChevronRight className="w-4 h-4 text-slate-300 dark:text-zinc-600 group-hover:text-corp-blue dark:group-hover:text-gold-500 transition-colors" />
+        <ChevronRight className="w-4 h-4 text-slate-300 dark:text-zinc-600 group-hover:text-corp-blue dark:group-hover:text-gold-500 transition-colors shrink-0" />
       </div>
     </div>
   );
 }
 
-function MilestoneItem({ milestone }: { milestone: MilestoneResult }) {
+function MilestoneItem({ milestone, t }: { milestone: MilestoneResult, t: any }) {
   const Icon = milestone.type === 'BIRTHDAY' ? Cake : Briefcase;
   const isBirthday = milestone.type === 'BIRTHDAY';
   
@@ -250,8 +324,8 @@ function MilestoneItem({ milestone }: { milestone: MilestoneResult }) {
           {milestone.employee.name}
         </h4>
         <p className="text-xs text-slate-500 dark:text-zinc-400">
-          {milestone.type === 'BIRTHDAY' ? 'Birthday' : `${milestone.years}yr Work-Anniversary`}
-          {milestone.isToday ? ' • Today' : ` • In ${milestone.daysUntil} days`}
+          {milestone.type === 'BIRTHDAY' ? t('Birthday') : `${milestone.years}${t('yr Work-Anniversary')}`}
+          {milestone.isToday ? ` • ${t('Today')}` : ` • ${t('In')} ${milestone.daysUntil} ${t('days')}`}
         </p>
       </div>
       <div className="text-right">

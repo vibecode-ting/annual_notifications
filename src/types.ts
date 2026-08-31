@@ -1,7 +1,7 @@
 import { Timestamp } from 'firebase/firestore';
 
 export type MilestoneType = 'BIRTHDAY' | 'ANNIVERSARY';
-export type UserRole = 'user' | 'pro' | 'admin';
+export type UserRole = 'user' | 'pro' | 'pro_plus' | 'admin';
 
 export interface AppUser {
   uid: string;

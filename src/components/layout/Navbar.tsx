@@ -1,19 +1,36 @@
-import { User, LogOut, Users, LayoutDashboard, Settings, Bell, Shield, Globe2, Zap, Moon, Sun } from 'lucide-react';
+import { User, LogOut, Users, LayoutDashboard, Settings, Bell, Shield, Globe2, Zap, Moon, Sun, Infinity as InfinityIcon } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '../../lib/utils';
 import { useTranslation } from 'react-i18next';
 import { useState, useEffect } from 'react';
+import { collection, query, where, getCountFromServer } from 'firebase/firestore';
+import { db } from '../../lib/firebase';
 
 export function Navbar({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (val: boolean) => void }) {
   const { user, appUser, signOut } = useAuth();
   const location = useLocation();
   const { t, i18n } = useTranslation();
   const [isDark, setIsDark] = useState(false);
+  const [employeeCount, setEmployeeCount] = useState(0);
 
   useEffect(() => {
     setIsDark(document.documentElement.classList.contains('dark'));
   }, []);
+
+  useEffect(() => {
+    async function fetchCount() {
+      if (!user) return;
+      try {
+        const q = query(collection(db, 'employees'), where('userId', '==', user.uid));
+        const snapshot = await getCountFromServer(q);
+        setEmployeeCount(snapshot.data().count);
+      } catch (err) {
+        console.error("Failed to fetch employee count", err);
+      }
+    }
+    fetchCount();
+  }, [user]);
 
   if (!user) return null;
 
@@ -24,10 +41,12 @@ export function Navbar({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (val
   ];
   
   if (appUser?.role === 'admin') {
-    navItems.push({ name: 'User Management', href: '/admin/users', icon: Shield });
+    navItems.push({ name: t('User Management'), href: '/admin/users', icon: Shield });
   }
 
-  const planName = appUser?.role === 'admin' ? 'Mod Admin' : appUser?.role === 'pro' ? 'Pro Subscriptions' : 'Free Plan';
+  const planName = appUser?.role === 'admin' ? 'Mod Admin' : appUser?.role === 'pro_plus' ? 'Pro Plus' : appUser?.role === 'pro' ? 'Pro Plan' : 'Free Plan';
+  const planLimit = appUser?.role === 'pro_plus' || appUser?.role === 'admin' ? Infinity : appUser?.role === 'pro' ? 1000 : 100;
+
 
   const toggleLanguage = () => {
     const langs = ['en', 'mm', 'zh', 'vn'];
@@ -108,14 +127,23 @@ export function Navbar({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (val
                 <p className="text-sm font-medium text-slate-900 dark:text-zinc-200 truncate">
                   {user.displayName || user.email}
                 </p>
-                <p className={cn(
-                  "text-[10px] font-bold uppercase tracking-wider mt-0.5",
-                  appUser?.role === 'pro' ? "text-corp-blue dark:text-gold-500" : 
-                  appUser?.role === 'admin' ? "text-emerald-600 dark:text-emerald-400" : 
-                  "text-slate-500 dark:text-zinc-500"
-                )}>
-                  {planName}
-                </p>
+                <div className="flex flex-col mt-1 gap-1">
+                  <p className={cn(
+                    "text-[10px] font-bold uppercase tracking-wider inline-flex items-center gap-1",
+                    appUser?.role === 'pro_plus' ? "text-purple-600 dark:text-purple-400" : 
+                    appUser?.role === 'pro' ? "text-corp-blue dark:text-gold-500" : 
+                    appUser?.role === 'admin' ? "text-emerald-600 dark:text-emerald-400" : 
+                    "text-slate-500 dark:text-zinc-500"
+                  )}>
+                    {appUser?.role === 'pro_plus' && <Zap className="w-3 h-3" />}
+                    {appUser?.role === 'pro' && <Shield className="w-3 h-3" />}
+                    {planName}
+                  </p>
+                  <p className="text-[10px] font-medium text-slate-500 dark:text-zinc-500 flex items-center gap-1">
+                    <Users className="w-3 h-3" />
+                    {employeeCount} / {planLimit === Infinity ? <InfinityIcon className="w-3 h-3 inline" /> : planLimit}
+                  </p>
+                </div>
               </div>
             )}
           </div>

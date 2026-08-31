@@ -9,6 +9,7 @@ import Settings from './views/Settings';
 import Login from './views/Login';
 import AdminUsers from './views/AdminUsers';
 import Pricing from './views/Pricing';
+import { cn } from './lib/utils';
 
 export default function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -19,7 +20,7 @@ export default function App() {
         <div className="min-h-screen flex">
           <Navbar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
           <main 
-            className="flex-1 p-8 overflow-auto ml-20 transition-all duration-300"
+            className={cn("flex-1 p-8 overflow-auto transition-all duration-300", isSidebarOpen ? "ml-72" : "ml-20")}
             onClick={() => setIsSidebarOpen(false)}
           >
             <Routes>
