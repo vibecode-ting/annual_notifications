@@ -49,6 +49,7 @@ jobs:
             echo "Build failed; see build.log"
             exit 1
           fi
+          cp dist/index.html dist/404.html
 
       - name: Upload build log
         uses: actions/upload-artifact@v4
