@@ -13,9 +13,10 @@ import { cn } from './lib/utils';
 
 export default function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const basename = import.meta.env.BASE_URL.replace(/\/$/, '') || '/';
 
   return (
-    <Router basename={import.meta.env.BASE_URL}>
+    <Router basename={basename}>
       <AuthProvider>
         <div className="min-h-screen flex">
           <Navbar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />

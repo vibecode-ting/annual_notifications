@@ -7,12 +7,12 @@ const configModules = import.meta.glob('../../firebase-applet-config.json', { ea
 const injectedConfig = Object.values(configModules)[0] as any;
 
 const firebaseConfig = injectedConfig?.default || {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || 'demo-api-key',
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || 'demo-app.firebaseapp.com',
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || 'demo-app',
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || 'demo-app.appspot.com',
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '123456789',
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || '1:123456789:web:123456789',
 };
 
 const dbId = injectedConfig?.default?.firestoreDatabaseId || import.meta.env.VITE_FIRESTORE_DB_ID || '(default)';
