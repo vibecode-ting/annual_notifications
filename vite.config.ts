@@ -4,8 +4,13 @@ import path from 'path';
 import {defineConfig} from 'vite';
 
 export default defineConfig(() => {
+  const repo = process.env.GITHUB_REPOSITORY ? process.env.GITHUB_REPOSITORY.split('/')[1] : 'annual_notifications';
+  const base = process.env.GITHUB_ACTIONS
+    ? (repo.endsWith('.github.io') ? '/' : `/${repo}/`)
+    : '/annual_notifications/';
+
   return {
-    base: '/annual_notifications/', // <-- set base to repo name for GitHub Pages
+    base,
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {

@@ -4,14 +4,23 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 permissions:
   contents: write
   pages: write
+  id-token: write
+
+concurrency:
+  group: 'pages'
+  cancel-in-progress: true
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -29,7 +38,7 @@ jobs:
           ls -la | grep -E 'package-lock.json|yarn.lock|pnpm-lock.yaml|bun.lock' || true
 
       - name: Install dependencies
-        run: npm install
+        run: npm install --legacy-peer-deps
 
       - name: Verify .env presence
         run: |
@@ -49,6 +58,7 @@ jobs:
             echo "Build failed; see build.log"
             exit 1
           fi
+          touch dist/.nojekyll
           cp dist/index.html dist/404.html
 
       - name: Upload build log
@@ -57,7 +67,20 @@ jobs:
           name: build-log
           path: build.log
 
-      - name: Deploy to gh-pages
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./dist
+
+      - name: Deploy to GitHub Pages (Actions)
+        id: deployment
+        uses: actions/deploy-pages@v4
+        continue-on-error: true
+
+      - name: Deploy to gh-pages branch
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -65,3 +88,4 @@ jobs:
           publish_branch: gh-pages
           user_name: github-actions[bot]
           user_email: 41898282+github-actions[bot]@users.noreply.github.com
+
